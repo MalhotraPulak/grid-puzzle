@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expression Grid Puzzle Visualizer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .variables {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .var-badge {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-size: 1.1rem;
+        }
+
+        .var-badge .var-name {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .var-badge .var-val {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 4px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .controls button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .controls button:hover {
+            color: #e2e8f0;
+            background: #334155;
+        }
+
+        .controls button.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .grid-wrapper {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(130px, 1fr));
+            grid-template-rows: repeat(13, auto);
+            gap: 3px;
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 3px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .cell {
+            background: #0f172a;
+            border-radius: 8px;
+            min-height: 62px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 6px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cell.has-expr {
+            background: #1a2744;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .cell.has-expr:hover {
+            background: #1e3a5f;
+            border-color: #3b82f6;
+            transform: scale(1.03);
+            z-index: 2;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+        }
+
+        .cell .expr-container {
+            text-align: center;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            line-height: 1.4;
+        }
+
+        .cell .value-container {
+            font-size: 1.6rem;
+            font-weight: 700;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .cell .expr-container.hidden,
+        .cell .value-container.hidden {
+            opacity: 0;
+            position: absolute;
+            pointer-events: none;
+            transform: scale(0.8);
+        }
+
+        .cell .expr-container.visible,
+        .cell .value-container.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Both mode */
+        .cell.both-mode .expr-container {
+            font-size: 0.8em;
+            margin-bottom: 4px;
+        }
+
+        .cell.both-mode .value-container {
+            font-size: 1.2rem;
+        }
+
+        .cell.both-mode .divider {
+            width: 60%;
+            height: 1px;
+            background: #334155;
+            margin: 4px 0;
+        }
+
+        /* Value color coding */
+        .val-1  { color: #86efac; }
+        .val-2  { color: #6ee7b7; }
+        .val-3  { color: #5eead4; }
+        .val-4  { color: #67e8f9; }
+        .val-5  { color: #7dd3fc; }
+        .val-6  { color: #93c5fd; }
+        .val-7  { color: #a5b4fc; }
+        .val-8  { color: #c4b5fd; }
+        .val-9  { color: #d8b4fe; }
+        .val-10 { color: #f0abfc; }
+        .val-11 { color: #f9a8d4; }
+        .val-12 { color: #fda4af; }
+        .val-13 { color: #fca5a5; }
+        .val-14 { color: #fdba74; }
+        .val-15 { color: #fcd34d; }
+        .val-16 { color: #fde047; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #334155;
+            color: white;
+        }
+
+        .modal-expression {
+            text-align: center;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .modal-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #0f172a;
+            border-radius: 10px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            min-width: 70px;
+        }
+
+        .step-content {
+            flex: 1;
+            text-align: center;
+        }
+
+        .step-result {
+            border-left-color: #22c55e;
+        }
+
+        .step-result .step-content {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .legend {
+            margin-top: 24px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 850px) {
+            .grid {
+                grid-template-columns: repeat(6, 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Expression Grid Puzzle</h1>
+            <div class="variables">
+                <div class="var-badge"><span class="var-name">a</span> = <span class="var-val" id="var-a"></span></div>
+                <div class="var-badge"><span class="var-name">b</span> = <span class="var-val" id="var-b"></span></div>
+                <div class="var-badge"><span class="var-name">c</span> = <span class="var-val" id="var-c"></span></div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="active" data-mode="both">Both</button>
+            <button data-mode="expr">Expression</button>
+            <button data-mode="value">Value</button>
+        </div>
+
+        <div class="grid-wrapper">
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <p class="legend">Click any filled cell to see the full calculation</p>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2>Calculation Detail</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-expression" id="modalExpr"></div>
+            <div class="modal-steps" id="modalSteps"></div>
+        </div>
+    </div>
+
+    <script>
+    const ROWS = 13, COLS = 6;
+    let currentMode = 'both';
+
+    const cells = [
+        { r:0, c:2, latex:"6c-4b", val:15,
+          sub:"6{\\cdot}\\tfrac{1}{2} - 4{\\cdot}(-3)", simp:"3 + 12 = 15" },
+        { r:1, c:3, latex:"8-b", val:11,
+          sub:"8-(-3)", simp:"8+3=11" },
+        { r:2, c:0, latex:"\\dfrac{a^b-4}{6c+1}", val:15,
+          sub:"\\dfrac{\\left(\\frac{1}{4}\\right)^{\\!-3}\\!- 4}{6{\\cdot}\\frac{1}{2}+1}", simp:"\\dfrac{64-4}{3+1}=\\dfrac{60}{4}=15" },
+        { r:2, c:1, latex:"\\dfrac{b+c}{c-1}", val:5,
+          sub:"\\dfrac{-3+\\frac{1}{2}}{\\frac{1}{2}-1}", simp:"\\dfrac{-5/2}{-1/2}=5" },
+        { r:2, c:3, latex:"b^2-\\dfrac{b}{c}", val:15,
+          sub:"(-3)^2-\\dfrac{-3}{\\frac{1}{2}}", simp:"9-(-6)=9+6=15" },
+        { r:2, c:4, latex:"\\dfrac{\\sqrt{30+a}}{c}", val:11,
+          sub:"\\dfrac{\\sqrt{30+\\frac{1}{4}}}{\\frac{1}{2}}", simp:"\\dfrac{\\sqrt{121/4}}{1/2}=\\dfrac{11/2}{1/2}=11" },
+        { r:2, c:5, latex:"\\dfrac{a+b}{c-3a}", val:11,
+          sub:"\\dfrac{\\frac{1}{4}+(-3)}{\\frac{1}{2}-\\frac{3}{4}}", simp:"\\dfrac{-11/4}{-1/4}=11" },
+        { r:3, c:1, latex:"\\dfrac{b-3a}{a-c}", val:15,
+          sub:"\\dfrac{-3-\\frac{3}{4}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-15/4}{-1/4}=15" },
+        { r:3, c:3, latex:"8a-2b", val:8,
+          sub:"8{\\cdot}\\tfrac{1}{4}-2(-3)", simp:"2+6=8" },
+        { r:3, c:4, latex:"\\dfrac{b}{a-c}", val:12,
+          sub:"\\dfrac{-3}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
+        { r:3, c:5, latex:"\\dfrac{b+9}{\\sqrt{c-a}}", val:12,
+          sub:"\\dfrac{-3+9}{\\sqrt{\\frac{1}{2}-\\frac{1}{4}}}", simp:"\\dfrac{6}{\\sqrt{1/4}}=\\dfrac{6}{1/2}=12" },
+        { r:4, c:0, latex:"\\dfrac{18}{ac+1}", val:16,
+          sub:"\\dfrac{18}{\\frac{1}{4}{\\cdot}\\frac{1}{2}+1}", simp:"\\dfrac{18}{\\frac{1}{8}+1}=\\dfrac{18}{9/8}=16" },
+        { r:4, c:2, latex:"c^b", val:8,
+          sub:"\\left(\\tfrac{1}{2}\\right)^{-3}", simp:"2^3=8" },
+        { r:4, c:4, latex:"\\dfrac{3+b^2}{\\sqrt{3+2c}}", val:6,
+          sub:"\\dfrac{3+(-3)^2}{\\sqrt{3+2{\\cdot}\\frac{1}{2}}}", simp:"\\dfrac{3+9}{\\sqrt{4}}=\\dfrac{12}{2}=6" },
+        { r:5, c:1, latex:"\\dfrac{b}{a^2-c^2}", val:16,
+          sub:"\\dfrac{-3}{\\frac{1}{16}-\\frac{1}{4}}", simp:"\\dfrac{-3}{-3/16}=16" },
+        { r:5, c:5, latex:"\\dfrac{\\sqrt{a+2}}{a}", val:6,
+          sub:"\\dfrac{\\sqrt{\\frac{1}{4}+2}}{\\frac{1}{4}}", simp:"\\dfrac{\\sqrt{9/4}}{1/4}=\\dfrac{3/2}{1/4}=6" },
+        { r:6, c:0, latex:"a^b-\\dfrac{12}{a}", val:16,
+          sub:"\\left(\\tfrac{1}{4}\\right)^{-3}-\\dfrac{12}{\\frac{1}{4}}", simp:"64-48=16" },
+        { r:6, c:1, latex:"2c+\\dfrac{c}{a}", val:3,
+          sub:"2{\\cdot}\\tfrac{1}{2}+\\dfrac{\\frac{1}{2}}{\\frac{1}{4}}", simp:"1+2=3" },
+        { r:6, c:2, latex:"4a-5b", val:16,
+          sub:"4{\\cdot}\\tfrac{1}{4}-5(-3)", simp:"1+15=16" },
+        { r:6, c:3, latex:"c+2a", val:1,
+          sub:"\\tfrac{1}{2}+2{\\cdot}\\tfrac{1}{4}", simp:"\\tfrac{1}{2}+\\tfrac{1}{2}=1" },
+        { r:6, c:4, latex:"\\dfrac{b}{9a-5c}", val:12,
+          sub:"\\dfrac{-3}{\\frac{9}{4}-\\frac{5}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
+        { r:7, c:0, latex:"\\dfrac{b^3+2c}{b+2c}", val:13,
+          sub:"\\dfrac{(-3)^3+2{\\cdot}\\frac{1}{2}}{-3+2{\\cdot}\\frac{1}{2}}", simp:"\\dfrac{-27+1}{-3+1}=\\dfrac{-26}{-2}=13" },
+        { r:7, c:4, latex:"\\dfrac{b}{a-1}", val:4,
+          sub:"\\dfrac{-3}{\\frac{1}{4}-1}", simp:"\\dfrac{-3}{-3/4}=4" },
+        { r:8, c:1, latex:"\\dfrac{c-b}{2a}", val:7,
+          sub:"\\dfrac{\\frac{1}{2}-(-3)}{2{\\cdot}\\frac{1}{4}}", simp:"\\dfrac{7/2}{1/2}=7" },
+        { r:8, c:3, latex:"\\dfrac{b}{a-c}", val:12,
+          sub:"\\dfrac{-3}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
+        { r:8, c:5, latex:"\\dfrac{b+c}{a-c}", val:10,
+          sub:"\\dfrac{-3+\\frac{1}{2}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-5/2}{-1/4}=10" },
+        { r:9, c:0, latex:"\\log_c a", val:2,
+          sub:"\\log_{1/2}\\!\\left(\\tfrac{1}{4}\\right)", simp:"\\log_{1/2}\\!\\left(\\tfrac{1}{2}\\right)^{\\!2}=2" },
+        { r:9, c:1, latex:"\\dfrac{c^2-b}{a}", val:13,
+          sub:"\\dfrac{\\left(\\frac{1}{2}\\right)^2-(-3)}{\\frac{1}{4}}", simp:"\\dfrac{\\frac{1}{4}+3}{\\frac{1}{4}}=\\dfrac{13/4}{1/4}=13" },
+        { r:9, c:2, latex:"(b-1)^2", val:16,
+          sub:"(-3-1)^2", simp:"(-4)^2=16" },
+        { r:9, c:4, latex:"\\dfrac{\\sqrt[3]{43-ac}}{a}", val:14,
+          sub:"\\dfrac{\\sqrt[3]{43-\\frac{1}{8}}}{\\frac{1}{4}}", simp:"\\dfrac{\\sqrt[3]{343/8}}{1/4}=\\dfrac{7/2}{1/4}=14" },
+        { r:10, c:1, latex:"\\dfrac{b-a}{a-c}", val:13,
+          sub:"\\dfrac{-3-\\frac{1}{4}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-13/4}{-1/4}=13" },
+        { r:10, c:2, latex:"11-b", val:14,
+          sub:"11-(-3)", simp:"11+3=14" },
+        { r:10, c:3, latex:"\\dfrac{b-2a}{a-c}", val:14,
+          sub:"\\dfrac{-3-\\frac{1}{2}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-7/2}{-1/4}=14" },
+        { r:10, c:4, latex:"\\dfrac{c+3}{a}", val:14,
+          sub:"\\dfrac{\\frac{1}{2}+3}{\\frac{1}{4}}", simp:"\\dfrac{7/2}{1/4}=14" },
+        { r:10, c:5, latex:"8c-\\dfrac{b}{c}", val:10,
+          sub:"8{\\cdot}\\tfrac{1}{2}-\\dfrac{-3}{\\frac{1}{2}}", simp:"4-(-6)=4+6=10" },
+        { r:11, c:2, latex:"b^2", val:9,
+          sub:"(-3)^2", simp:"9" },
+        { r:12, c:4, latex:"\\dfrac{2^b+1}{ac}", val:9,
+          sub:"\\dfrac{2^{-3}+1}{\\frac{1}{4}{\\cdot}\\frac{1}{2}}", simp:"\\dfrac{\\frac{1}{8}+1}{\\frac{1}{8}}=\\dfrac{9/8}{1/8}=9" },
+    ];
+
+    // Build lookup
+    const cellMap = {};
+    cells.forEach(c => { cellMap[c.r + ',' + c.c] = c; });
+
+    function getValueColor(val) {
+        return 'val-' + val;
+    }
+
+    function renderKatex(el, latex, displayMode = false) {
+        try {
+            katex.render(latex, el, { displayMode, throwOnError: false, trust: true });
+        } catch(e) {
+            el.textContent = latex;
+        }
+    }
+
+    function buildGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.dataset.row = r;
+                div.dataset.col = c;
+
+                const data = cellMap[r + ',' + c];
+                if (data) {
+                    div.classList.add('has-expr');
+
+                    const exprDiv = document.createElement('div');
+                    exprDiv.className = 'expr-container';
+                    renderKatex(exprDiv, data.latex);
+
+                    const valDiv = document.createElement('div');
+                    valDiv.className = 'value-container ' + getValueColor(data.val);
+                    valDiv.textContent = data.val;
+
+                    const divider = document.createElement('div');
+                    divider.className = 'divider';
+
+                    div.appendChild(exprDiv);
+                    div.appendChild(divider);
+                    div.appendChild(valDiv);
+
+                    div.addEventListener('click', () => openModal(data));
+                }
+
+                grid.appendChild(div);
+            }
+        }
+
+        applyMode(currentMode);
+    }
+
+    function applyMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.cell.has-expr').forEach(cell => {
+            const expr = cell.querySelector('.expr-container');
+            const val = cell.querySelector('.value-container');
+            const divider = cell.querySelector('.divider');
+
+            cell.classList.remove('both-mode');
+
+            if (mode === 'expr') {
+                expr.className = 'expr-container visible';
+                val.className = 'value-container hidden';
+                divider.style.display = 'none';
+            } else if (mode === 'value') {
+                expr.className = 'expr-container hidden';
+                val.className = 'value-container visible ' + val.classList[val.classList.length - 1];
+                divider.style.display = 'none';
+            } else {
+                cell.classList.add('both-mode');
+                expr.className = 'expr-container visible';
+                val.className = 'value-container visible ' + getValueColor(
+                    cells.find(c => c.r == cell.dataset.row && c.c == cell.dataset.col)?.val
+                );
+                divider.style.display = 'block';
+            }
+        });
+    }
+
+    function openModal(data) {
+        const overlay = document.getElementById('modalOverlay');
+        const exprEl = document.getElementById('modalExpr');
+        const stepsEl = document.getElementById('modalSteps');
+
+        renderKatex(exprEl, data.latex, true);
+
+        stepsEl.innerHTML = '';
+
+        // Substitution step
+        const step1 = document.createElement('div');
+        step1.className = 'step';
+        step1.innerHTML = '<div class="step-label">Substitute</div><div class="step-content" id="step1-content"></div>';
+        stepsEl.appendChild(step1);
+        renderKatex(document.getElementById('step1-content'), data.sub);
+
+        // Simplification step
+        const step2 = document.createElement('div');
+        step2.className = 'step';
+        step2.innerHTML = '<div class="step-label">Simplify</div><div class="step-content" id="step2-content"></div>';
+        stepsEl.appendChild(step2);
+        renderKatex(document.getElementById('step2-content'), data.simp);
+
+        // Result step
+        const step3 = document.createElement('div');
+        step3.className = 'step step-result';
+        step3.innerHTML = `<div class="step-label">Result</div><div class="step-content ${getValueColor(data.val)}">${data.val}</div>`;
+        stepsEl.appendChild(step3);
+
+        overlay.classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    // Event listeners
+    document.querySelectorAll('.controls button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyMode(btn.dataset.mode);
+        });
+    });
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+        renderKatex(document.getElementById('var-a'), '\\tfrac{1}{4}');
+        renderKatex(document.getElementById('var-b'), '-3');
+        renderKatex(document.getElementById('var-c'), '\\tfrac{1}{2}');
+        buildGrid();
+    });
+    </script>
+</body>
+</html>
