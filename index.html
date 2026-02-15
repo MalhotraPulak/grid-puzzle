@@ -18,7 +18,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -104,7 +104,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(6, minmax(130px, 1fr));
+            grid-template-columns: repeat(13, minmax(70px, 1fr));
             grid-template-rows: repeat(13, auto);
             gap: 3px;
             background: #1e293b;
@@ -320,9 +320,9 @@
             font-size: 0.85rem;
         }
 
-        @media (max-width: 850px) {
+        @media (max-width: 1100px) {
             .grid {
-                grid-template-columns: repeat(6, 120px);
+                grid-template-columns: repeat(13, 70px);
             }
         }
     </style>
@@ -363,83 +363,83 @@
     </div>
 
     <script>
-    const ROWS = 13, COLS = 6;
+    const ROWS = 13, COLS = 13;
     let currentMode = 'both';
 
     const cells = [
-        { r:0, c:2, latex:"6c-4b", val:15,
+        { r:0, c:5, latex:"6c-4b", val:15,
           sub:"6{\\cdot}\\tfrac{1}{2} - 4{\\cdot}(-3)", simp:"3 + 12 = 15" },
-        { r:1, c:3, latex:"8-b", val:11,
+        { r:1, c:7, latex:"8-b", val:11,
           sub:"8-(-3)", simp:"8+3=11" },
-        { r:2, c:0, latex:"\\dfrac{a^b-4}{6c+1}", val:15,
+        { r:2, c:1, latex:"\\dfrac{a^b-4}{6c+1}", val:15,
           sub:"\\dfrac{\\left(\\frac{1}{4}\\right)^{\\!-3}\\!- 4}{6{\\cdot}\\frac{1}{2}+1}", simp:"\\dfrac{64-4}{3+1}=\\dfrac{60}{4}=15" },
-        { r:2, c:1, latex:"\\dfrac{b+c}{c-1}", val:5,
+        { r:2, c:3, latex:"\\dfrac{b+c}{c-1}", val:5,
           sub:"\\dfrac{-3+\\frac{1}{2}}{\\frac{1}{2}-1}", simp:"\\dfrac{-5/2}{-1/2}=5" },
-        { r:2, c:3, latex:"b^2-\\dfrac{b}{c}", val:15,
+        { r:2, c:7, latex:"b^2-\\dfrac{b}{c}", val:15,
           sub:"(-3)^2-\\dfrac{-3}{\\frac{1}{2}}", simp:"9-(-6)=9+6=15" },
-        { r:2, c:4, latex:"\\dfrac{\\sqrt{30+a}}{c}", val:11,
+        { r:2, c:9, latex:"\\dfrac{\\sqrt{30+a}}{c}", val:11,
           sub:"\\dfrac{\\sqrt{30+\\frac{1}{4}}}{\\frac{1}{2}}", simp:"\\dfrac{\\sqrt{121/4}}{1/2}=\\dfrac{11/2}{1/2}=11" },
-        { r:2, c:5, latex:"\\dfrac{a+b}{c-3a}", val:11,
+        { r:2, c:11, latex:"\\dfrac{a+b}{c-3a}", val:11,
           sub:"\\dfrac{\\frac{1}{4}+(-3)}{\\frac{1}{2}-\\frac{3}{4}}", simp:"\\dfrac{-11/4}{-1/4}=11" },
-        { r:3, c:1, latex:"\\dfrac{b-3a}{a-c}", val:15,
+        { r:3, c:3, latex:"\\dfrac{b-3a}{a-c}", val:15,
           sub:"\\dfrac{-3-\\frac{3}{4}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-15/4}{-1/4}=15" },
-        { r:3, c:3, latex:"8a-2b", val:8,
+        { r:3, c:7, latex:"8a-2b", val:8,
           sub:"8{\\cdot}\\tfrac{1}{4}-2(-3)", simp:"2+6=8" },
-        { r:3, c:4, latex:"\\dfrac{b}{a-c}", val:12,
+        { r:3, c:9, latex:"\\dfrac{b}{a-c}", val:12,
           sub:"\\dfrac{-3}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
-        { r:3, c:5, latex:"\\dfrac{b+9}{\\sqrt{c-a}}", val:12,
+        { r:3, c:12, latex:"\\dfrac{b+9}{\\sqrt{c-a}}", val:12,
           sub:"\\dfrac{-3+9}{\\sqrt{\\frac{1}{2}-\\frac{1}{4}}}", simp:"\\dfrac{6}{\\sqrt{1/4}}=\\dfrac{6}{1/2}=12" },
-        { r:4, c:0, latex:"\\dfrac{18}{ac+1}", val:16,
+        { r:4, c:1, latex:"\\dfrac{18}{ac+1}", val:16,
           sub:"\\dfrac{18}{\\frac{1}{4}{\\cdot}\\frac{1}{2}+1}", simp:"\\dfrac{18}{\\frac{1}{8}+1}=\\dfrac{18}{9/8}=16" },
-        { r:4, c:2, latex:"c^b", val:8,
+        { r:4, c:5, latex:"c^b", val:8,
           sub:"\\left(\\tfrac{1}{2}\\right)^{-3}", simp:"2^3=8" },
-        { r:4, c:4, latex:"\\dfrac{3+b^2}{\\sqrt{3+2c}}", val:6,
+        { r:4, c:10, latex:"\\dfrac{3+b^2}{\\sqrt{3+2c}}", val:6,
           sub:"\\dfrac{3+(-3)^2}{\\sqrt{3+2{\\cdot}\\frac{1}{2}}}", simp:"\\dfrac{3+9}{\\sqrt{4}}=\\dfrac{12}{2}=6" },
-        { r:5, c:1, latex:"\\dfrac{b}{a^2-c^2}", val:16,
+        { r:5, c:3, latex:"\\dfrac{b}{a^2-c^2}", val:16,
           sub:"\\dfrac{-3}{\\frac{1}{16}-\\frac{1}{4}}", simp:"\\dfrac{-3}{-3/16}=16" },
-        { r:5, c:5, latex:"\\dfrac{\\sqrt{a+2}}{a}", val:6,
+        { r:5, c:12, latex:"\\dfrac{\\sqrt{a+2}}{a}", val:6,
           sub:"\\dfrac{\\sqrt{\\frac{1}{4}+2}}{\\frac{1}{4}}", simp:"\\dfrac{\\sqrt{9/4}}{1/4}=\\dfrac{3/2}{1/4}=6" },
-        { r:6, c:0, latex:"a^b-\\dfrac{12}{a}", val:16,
+        { r:6, c:2, latex:"a^b-\\dfrac{12}{a}", val:16,
           sub:"\\left(\\tfrac{1}{4}\\right)^{-3}-\\dfrac{12}{\\frac{1}{4}}", simp:"64-48=16" },
-        { r:6, c:1, latex:"2c+\\dfrac{c}{a}", val:3,
+        { r:6, c:4, latex:"2c+\\dfrac{c}{a}", val:3,
           sub:"2{\\cdot}\\tfrac{1}{2}+\\dfrac{\\frac{1}{2}}{\\frac{1}{4}}", simp:"1+2=3" },
-        { r:6, c:2, latex:"4a-5b", val:16,
+        { r:6, c:6, latex:"4a-5b", val:16,
           sub:"4{\\cdot}\\tfrac{1}{4}-5(-3)", simp:"1+15=16" },
-        { r:6, c:3, latex:"c+2a", val:1,
+        { r:6, c:8, latex:"c+2a", val:1,
           sub:"\\tfrac{1}{2}+2{\\cdot}\\tfrac{1}{4}", simp:"\\tfrac{1}{2}+\\tfrac{1}{2}=1" },
-        { r:6, c:4, latex:"\\dfrac{b}{9a-5c}", val:12,
+        { r:6, c:10, latex:"\\dfrac{b}{9a-5c}", val:12,
           sub:"\\dfrac{-3}{\\frac{9}{4}-\\frac{5}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
         { r:7, c:0, latex:"\\dfrac{b^3+2c}{b+2c}", val:13,
           sub:"\\dfrac{(-3)^3+2{\\cdot}\\frac{1}{2}}{-3+2{\\cdot}\\frac{1}{2}}", simp:"\\dfrac{-27+1}{-3+1}=\\dfrac{-26}{-2}=13" },
-        { r:7, c:4, latex:"\\dfrac{b}{a-1}", val:4,
+        { r:7, c:8, latex:"\\dfrac{b}{a-1}", val:4,
           sub:"\\dfrac{-3}{\\frac{1}{4}-1}", simp:"\\dfrac{-3}{-3/4}=4" },
-        { r:8, c:1, latex:"\\dfrac{c-b}{2a}", val:7,
+        { r:8, c:3, latex:"\\dfrac{c-b}{2a}", val:7,
           sub:"\\dfrac{\\frac{1}{2}-(-3)}{2{\\cdot}\\frac{1}{4}}", simp:"\\dfrac{7/2}{1/2}=7" },
-        { r:8, c:3, latex:"\\dfrac{b}{a-c}", val:12,
+        { r:8, c:7, latex:"\\dfrac{b}{a-c}", val:12,
           sub:"\\dfrac{-3}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-3}{-1/4}=12" },
-        { r:8, c:5, latex:"\\dfrac{b+c}{a-c}", val:10,
+        { r:8, c:12, latex:"\\dfrac{b+c}{a-c}", val:10,
           sub:"\\dfrac{-3+\\frac{1}{2}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-5/2}{-1/4}=10" },
-        { r:9, c:0, latex:"\\log_c a", val:2,
+        { r:9, c:2, latex:"\\log_c a", val:2,
           sub:"\\log_{1/2}\\!\\left(\\tfrac{1}{4}\\right)", simp:"\\log_{1/2}\\!\\left(\\tfrac{1}{2}\\right)^{\\!2}=2" },
-        { r:9, c:1, latex:"\\dfrac{c^2-b}{a}", val:13,
+        { r:9, c:4, latex:"\\dfrac{c^2-b}{a}", val:13,
           sub:"\\dfrac{\\left(\\frac{1}{2}\\right)^2-(-3)}{\\frac{1}{4}}", simp:"\\dfrac{\\frac{1}{4}+3}{\\frac{1}{4}}=\\dfrac{13/4}{1/4}=13" },
-        { r:9, c:2, latex:"(b-1)^2", val:16,
+        { r:9, c:6, latex:"(b-1)^2", val:16,
           sub:"(-3-1)^2", simp:"(-4)^2=16" },
-        { r:9, c:4, latex:"\\dfrac{\\sqrt[3]{43-ac}}{a}", val:14,
+        { r:9, c:9, latex:"\\dfrac{\\sqrt[3]{43-ac}}{a}", val:14,
           sub:"\\dfrac{\\sqrt[3]{43-\\frac{1}{8}}}{\\frac{1}{4}}", simp:"\\dfrac{\\sqrt[3]{343/8}}{1/4}=\\dfrac{7/2}{1/4}=14" },
-        { r:10, c:1, latex:"\\dfrac{b-a}{a-c}", val:13,
+        { r:10, c:3, latex:"\\dfrac{b-a}{a-c}", val:13,
           sub:"\\dfrac{-3-\\frac{1}{4}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-13/4}{-1/4}=13" },
-        { r:10, c:2, latex:"11-b", val:14,
+        { r:10, c:5, latex:"11-b", val:14,
           sub:"11-(-3)", simp:"11+3=14" },
-        { r:10, c:3, latex:"\\dfrac{b-2a}{a-c}", val:14,
+        { r:10, c:7, latex:"\\dfrac{b-2a}{a-c}", val:14,
           sub:"\\dfrac{-3-\\frac{1}{2}}{\\frac{1}{4}-\\frac{1}{2}}", simp:"\\dfrac{-7/2}{-1/4}=14" },
-        { r:10, c:4, latex:"\\dfrac{c+3}{a}", val:14,
+        { r:10, c:9, latex:"\\dfrac{c+3}{a}", val:14,
           sub:"\\dfrac{\\frac{1}{2}+3}{\\frac{1}{4}}", simp:"\\dfrac{7/2}{1/4}=14" },
-        { r:10, c:5, latex:"8c-\\dfrac{b}{c}", val:10,
+        { r:10, c:11, latex:"8c-\\dfrac{b}{c}", val:10,
           sub:"8{\\cdot}\\tfrac{1}{2}-\\dfrac{-3}{\\frac{1}{2}}", simp:"4-(-6)=4+6=10" },
-        { r:11, c:2, latex:"b^2", val:9,
+        { r:11, c:6, latex:"b^2", val:9,
           sub:"(-3)^2", simp:"9" },
-        { r:12, c:4, latex:"\\dfrac{2^b+1}{ac}", val:9,
+        { r:12, c:9, latex:"\\dfrac{2^b+1}{ac}", val:9,
           sub:"\\dfrac{2^{-3}+1}{\\frac{1}{4}{\\cdot}\\frac{1}{2}}", simp:"\\dfrac{\\frac{1}{8}+1}{\\frac{1}{8}}=\\dfrac{9/8}{1/8}=9" },
     ];
 
